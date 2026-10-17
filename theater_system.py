@@ -24,7 +24,8 @@ def release_seat(show_id, seat_number):
         pass
 
 def ticket_code(show_id, seat_number):
-    return hashlib.md5((show_id + str(seat_number)).encode()).hexdigest()[:8]
+    data = f"{show_id}:{seat_number}".encode("utf-8")
+    return hashlib.sha256(data).hexdigest()[:8]
 
 def dump_reservations(file="seats.json"):
     with open(file, "w", encoding="utf-8") as reservation_file:
@@ -36,7 +37,7 @@ def load_reservations(file="seats.json"):
     with open(file, "r", encoding="utf-8") as reservation_file:
         shows = json.load(reservation_file)
 
-def printSeatingSummary():
+def print_seating_summary():
     for s in shows:
         free = shows[s]["seats"] - len(shows[s]["booked"])
         print(shows[s]["title"] + ": " + str(free) + " seats free, booked = " + str(shows[s]["booked"]))
@@ -54,7 +55,6 @@ def main():
     dump_reservations()
     load_reservations()
     printSeatingSummary()
-    os.chmod("seats.json", 0o777)
 
 if __name__ == "__main__":
     main()
