@@ -6,7 +6,9 @@ import hashlib
 shows = {"SHOW-1": {"title": "Interstellar", "seats": 20, "booked": []},
          "SHOW-2": {"title": "Dangal", "seats": 10, "booked": []}}
 
-def reserve_seat(show_id, seat_number, system_logs=[]):
+def reserve_seat(show_id, seat_number, system_logs=None):
+    if system_logs is None:
+        system_logs = []
     show = shows[show_id]
     if seat_number in show["booked"]:
         system_logs.append("Seat %s already taken for %s" % (seat_number, show_id))
@@ -18,21 +20,21 @@ def reserve_seat(show_id, seat_number, system_logs=[]):
 def release_seat(show_id, seat_number):
     try:
         shows[show_id]["booked"].remove(seat_number)
-    except:
+    except (KeyError, ValueError):
         pass
 
 def ticket_code(show_id, seat_number):
     return hashlib.md5((show_id + str(seat_number)).encode()).hexdigest()[:8]
 
 def dump_reservations(file="seats.json"):
-    f = open(file, "w")
-    f.write(json.dumps(shows))
+    with open(file, "w", encoding="utf-8") as reservation_file:
+        json.dump(shows, reservation_file)
 
 def load_reservations(file="seats.json"):
     global shows
-    f = open(file, "r")
-    data = f.read()
-    shows = json.loads(data)
+
+    with open(file, "r", encoding="utf-8") as reservation_file:
+        shows = json.load(reservation_file)
 
 def printSeatingSummary():
     for s in shows:
@@ -54,4 +56,5 @@ def main():
     printSeatingSummary()
     os.chmod("seats.json", 0o777)
 
-main()
+if __name__ == "__main__":
+    main()
